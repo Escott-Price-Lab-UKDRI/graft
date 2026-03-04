@@ -47,7 +47,7 @@ include { ADD_NEFF }       from './modules/add_neff'
 include { LDSC_PAIRWISE }  from './subworkflows/ldsc_pairwise'
 include { HDL_L_PAIRS }    from './subworkflows/hdl_pairs'
 include { SUMHER_RUN }     from './subworkflows/sumher_run'
-include { LAVA_GWAS_PREP } from './modules/lava_prep'
+include { LAVA_PREP }      from './subworkflows/lava_prep'
 include { LAVA_RUN }       from './subworkflows/lava_pairwise'
 
 // nextflow run main.nf -profile local  -c conf/local/nextflow.config --input assets/gwas.tsv --pairs assets/ldsc_pairs.tsv --outdir results
