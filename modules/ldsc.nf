@@ -1,82 +1,48 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
-params.rbin = "Rscript"
 
 process LDSC {
-    tag "${trait1}_${trait2}_ldsc"
+  tag "${meta.trait1}_${meta.trait2}"
 
-    input:
-    tuple val(trait1), val(trait2), val(pheno1_file), val(pheno2_file), val(cases1), val(controls1), val(cases2), val(controls2), val(pp1), val(pp2)
+  publishDir "${params.outdir}/ldsc/${meta.trait1}_${meta.trait2}", mode: 'copy', overwrite: true
 
-    output:
-    path "${trait1}_${trait2}_ldsc.done", emit: ldsc_done
+  input:
+  tuple val(meta), path(trait1_sumstats), path(trait2_sumstats)
+  file(ldsc_r)
+  file(hm3_snplist)
+  path(ld_chr_dir)
+  path(wld_dir)
 
-    script:
-    """
-    set -e
-    mkdir -p ${workflow.launchDir}/outputs/ldsc
-    mkdir -p ${workflow.launchDir}/data/Main/${trait1}/post-ldsc
-    mkdir -p ${workflow.launchDir}/data/Main/${trait2}/post-ldsc
+  output:
+  tuple val(meta), path("${meta.trait1}_${meta.trait2}_ldsc"), emit: ldsc_outdir
 
-    ${params.rbin} ${workflow.launchDir}/src/ldsc/ldsc.R \
-        ${workflow.launchDir}/data/Main/${trait1}/post-qc/${pheno1_file} \
-        ${workflow.launchDir}/data/Main/${trait2}/post-qc/${pheno2_file} \
-        ${trait1} \
-        ${trait2} \
-        ${cases1} \
-        ${controls1} \
-        ${cases2} \
-        ${controls2} \
-        ${pp1} \
-        ${pp2} \
-        ${workflow.launchDir}/outputs/ldsc
+  script:
+  """
+  set -euo pipefail
 
-    touch ${trait1}_${trait2}_ldsc.done
-    mkdir -p ${workflow.launchDir}/logs/ldsc
-    mkdir -p ${workflow.launchDir}/logs/ldsc/${trait1}_${trait2}_ldsc
-    cp ${trait1}_${trait2}_ldsc.done ${workflow.launchDir}/logs/ldsc/${trait1}_${trait2}_ldsc/
-    """
-}
+  RBIN="${params.rbin}"
+  if [ -z "\$RBIN" ] || [ "\$RBIN" = "null" ]; then
+    RBIN="Rscript"
+  fi
 
-workflow {
-    trait_info = Channel.of(
-        tuple(
-            "AD",
-            "SCZ",
-            "AD.ldsc_ready_neff.tsv",
-            "SCZ.ldsc_ready_neff.tsv",
-            21982,
-            41944,
-            67390,
-            94015,
-            0.07,
-            0.01
-        ),
-        tuple(
-            "AD",
-            "LON",
-            "AD.ldsc_ready_neff.tsv",
-            "LON.ldsc_ready_neff.tsv",
-            21982,
-            41944,
-            354854,
-            354855,
-            0.07,
-            0.10
-        ),
-        tuple(
-            "SCZ",
-            "LON",
-            "SCZ.ldsc_ready_neff.tsv",
-            "LON.ldsc_ready_neff.tsv",
-            67390,
-            94015,
-            354854,
-            354855,
-            0.01,
-            0.10
-        )
-    )
+  PAIR="${meta.trait1}_${meta.trait2}"
+  WORKOUT="\${PAIR}_ldsc"
+  mkdir -p "\$WORKOUT"
 
-    LDSC(trait_info)
+  "\$RBIN" "${ldsc_r}" \
+    "${trait1_sumstats}" \
+    "${trait2_sumstats}" \
+    "${meta.trait1}" \
+    "${meta.trait2}" \
+    "${meta.cases1}" \
+    "${meta.controls1}" \
+    "${meta.cases2}" \
+    "${meta.controls2}" \
+    "${meta.pop_prev1}" \
+    "${meta.pop_prev2}" \
+    "\$WORKOUT" \
+    "${hm3_snplist}" \
+    "${ld_chr_dir}" \
+    "${wld_dir}"
+  """
 }

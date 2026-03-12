@@ -1,12 +1,64 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-include { QC_GWAS }        from './modules/qc_gwas'
-include { ADD_NEFF }       from './modules/add_neff'
-include { LDSC_PAIRWISE }  from './subworkflows/ldsc_pairwise'
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    nf-core/neurobridge
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Started on October 2025
+    Escott-Price Lab; UK Dementia Research Institute
+    GitHub: https://github.com/guillermocomesanacimadevila/neurobridge
 
-// nextflow run main.nf -profile local --input assets/gwas.tsv --pairs assets/ldsc_pairs.tsv --outdir results
-// nextflow run main.nf -profile docker --input assets/gwas.tsv --pairs assets/ldsc_pairs.tsv --outdir results
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/ 
+
+def GREEN = '\033[38;5;40m'   
+def DARK = '\033[38;5;236m'  
+def BOLD = '\033[1m'
+def RESET = '\033[0m'
+
+println """
+${GREEN}${BOLD}
+ ███╗   ██╗███████╗       ██████╗ ██████╗ ██████╗ ███████╗
+ ████╗  ██║██╔════╝      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+ ██╔██╗ ██║█████╗  █████╗██║     ██║   ██║██████╔╝█████╗
+ ██║╚██╗██║██╔══╝  ╚════╝██║     ██║   ██║██╔══██╗██╔══╝
+ ██║ ╚████║██║            ╚██████╗╚██████╔╝██║  ██║███████╗
+ ╚═╝  ╚═══╝╚═╝             ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+${RESET}
+
+${GREEN}${BOLD}
+███╗   ██╗███████╗██╗   ██╗██████╗  ██████╗ ██████╗ ██████╗ ██╗██████╗  ██████╗ ███████╗
+████╗  ██║██╔════╝██║   ██║██╔══██╗██╔═══██╗██╔══██╗██╔══██╗██║██╔══██╗██╔════╝ ██╔════╝
+██╔██╗ ██║█████╗  ██║   ██║██████╔╝██║   ██║██████╔╝██████╔╝██║██║  ██║██║  ███╗█████╗
+██║╚██╗██║██╔══╝  ██║   ██║██╔══██╗██║   ██║██╔══██╗██╔══██╗██║██║  ██║██║   ██║██╔══╝
+██║ ╚████║███████╗╚██████╔╝██   ██╔╝╚█████╔╝███████║██║  ██║██║██████╔╝╚██████╔╝███████╗
+╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═════╝  ╚═════╝ ╚═════╝╚═╝  ╚═╝╚═╝╚═════╝  ╚═════╝ ╚══════╝
+${RESET}
+
+    Escott-Price Lab | UKDRI Cardiff
+    v${workflow.manifest.version ?: 'dev'}
+
+------------------------------------------------------------
+"""
+
+include { QC_GWAS }                   from './modules/qc_gwas'
+include { ADD_NEFF }                  from './modules/add_neff'
+include { LDSC_PAIRWISE }             from './subworkflows/ldsc_pairwise'
+include { HDL_L_PAIRS }               from './subworkflows/hdl_pairs'
+include { SUMHER_RUN }                from './subworkflows/sumher_run'
+include { LAVA_PREP }                 from './subworkflows/lava_prep'
+include { LAVA_RUN }                  from './subworkflows/lava_pairwise'
+include { CONJFDR_DATA_PREP; CONJFDR} from './modules/conjFDR'
+
+// nextflow run main.nf -profile local  -c conf/local/nextflow.config --input assets/gwas.tsv --pairs assets/ldsc_pairs.tsv --outdir results
+// nextflow run main.nf -profile docker -c conf/local/nextflow.config --input assets/gwas.tsv --pairs assets/ldsc_pairs.tsv --outdir results
+
+/*
+pre-run check;
+-> if workflow.launchDir != nerurobridge -> cd neurobridge/
+*/
+
 
 workflow {
 
@@ -47,15 +99,62 @@ workflow {
       meta.apoe_chr           = (row.apoe_chr ?: "19").toString()
       meta.apoe_start         = (row.apoe_start ?: "44000000").toString()
       meta.apoe_end           = (row.apoe_end ?: "46500000").toString()
-      meta.cases              = row.cases
-      meta.controls           = row.controls
+      meta.cases              = (row.cases ?: "").toString().trim()
+      meta.controls           = (row.controls ?: "").toString().trim()
 
       tuple(meta, file(row.gwas))
     }
 
-  ch_qc     = QC_GWAS(ch_in).ldsc_ready
-  ch_neff   = ADD_NEFF(ch_qc).ldsc_neff
-  ch_sum    = ch_neff.map { meta, f -> tuple(meta.id, f) }
+  // scr
+  qc_script = file("${workflow.launchDir}/bin/qc_gwas.py")
+  neff_script = file("${workflow.launchDir}/bin/compute_neff.py")
+  ldsc_r = file("${workflow.launchDir}/bin/ldsc.R")
+  hdl_l_r = file("${workflow.launchDir}/bin/hdl_l.R")
+  calc_p = file("${workflow.launchDir}/bin/calc_p.py")
+  lava_data_prep = file("${workflow.launchDir}/bin/prep_data.py")
+  lava_r = file("${workflow.launchDir}/bin/lava_pair.R")
+  conjfdr_prep = file("${workflow.launchDir}/bin/conjFDR_prep.py")
+  conjfdr_r = file("${workflow.launchDir}/bin/conjFDR.R")
+
+  // ~~~~~~~~ ~~~~~~~~~~~~~~~ ~~~~~~~~ // 
+  // ~~~~~~~~ ~~~~~~~~~~~~~~~ ~~~~~~~~ // 
+  // ~~~~~~~~ REFERENCE FILES ~~~~~~~~ //
+  // ~~~~~~~~ ~~~~~~~~~~~~~~~ ~~~~~~~~ // 
+  // ~~~~~~~~ ~~~~~~~~~~~~~~~ ~~~~~~~~ // 
+
+  // refs (LDSC)
+  hm3_snplist = file("${workflow.launchDir}/ref/ldsc/w_hm3.snplist")
+  ld_chr_dir = file("${workflow.launchDir}/ref/ldsc/eur_w_ld_chr")
+  wld_dir = file("${workflow.launchDir}/ref/ldsc/weights_hm3_no_hla")
+
+  // refs (HDL-L)
+  ld_path = file("${workflow.launchDir}/ref/HDL-L_ref/LD.path")
+  bim_path = file("${workflow.launchDir}/ref/HDL-L_ref/bimfile")
+
+  // ref (SumHer)
+  plink_dir = file("${workflow.launchDir}/ref/ldsc/1000G_EUR_Phase3_plink")
+  ldak_bin = file("${workflow.launchDir}/ref/SumHer/LDAK/${params.ldak_os}")
+
+  // ref (LAVA)
+  lava_ref_dir = file("${workflow.launchDir}/ref/lava/lava_ref")
+  lava_ref_prefix = "lava-ukb-v1.1"
+  loci_file = file("${workflow.launchDir}/ref/lava/hdll_blocks.coords.loci")
+
+  // ref (conjFDR)
+  conjfdr_refdir = file("${workflow.launchDir}/ref/conjFDR")
+
+  // ~~~~~~~~ ~~~~~~~~~~~~~~~ ~~~~~~~~ // 
+  // ~~~~~~~~ ~~~~~~~~~~~~~~~ ~~~~~~~~ // 
+  // ~~~~~~~~  ~~~~~~~~~~~~~~ ~~~~~~~~ //
+  // ~~~~~~~~ ~~~~~~~~~~~~~~~ ~~~~~~~~ // 
+  // ~~~~~~~~ ~~~~~~~~~~~~~~~ ~~~~~~~~ // 
+
+  // QC + NEFF
+  ch_qc = QC_GWAS(ch_in, qc_script).ldsc_ready
+  ch_neff = ADD_NEFF(ch_qc, neff_script).ldsc_neff
+
+  ch_sum = ch_neff.map { meta, f -> tuple(meta.id, f) }
+  ch_sumstats = ch_neff.map { meta, f -> tuple(meta, f) }
 
   ch_pairs = Channel
     .fromPath(params.pairs)
@@ -74,6 +173,7 @@ workflow {
       tuple(meta.trait1, meta.trait2, meta)
     }
 
+  // join -> (meta, sum1, sum2)
   ch_with_t1 = ch_pairs
     .join(ch_sum, by: 0)
     .map { trait1, trait2, meta, f1 -> tuple(trait2, meta, f1) }
@@ -82,5 +182,124 @@ workflow {
     .join(ch_sum, by: 0)
     .map { trait2, meta, f1, f2 -> tuple(meta, f1, f2) }
 
-  LDSC_PAIRWISE(ch_ldsc_in)
+  LDSC_PAIRWISE(
+    ch_ldsc_in,
+    ldsc_r,
+    hm3_snplist,
+    ld_chr_dir,
+    wld_dir
+  )
+
+  ch_neff_key = ch_neff.map { meta, f -> tuple(meta.id, f) }
+
+  ch_pairs_hdl = Channel
+    .fromPath(params.pairs)
+    .splitCsv(header:true, sep:'\t')
+    .map { row ->
+      def meta = [
+        trait1: row.trait1.toString().trim(),
+        trait2: row.trait2.toString().trim()
+      ]
+      tuple(meta.trait1, meta.trait2, meta)
+    }
+
+  ch_hdl_with_t1 = ch_pairs_hdl
+    .join(ch_neff_key, by: 0)
+    .map { trait1, trait2, meta, f1 ->
+      def m = meta + [ beta1: "BETA", se1: "SE" ]
+      tuple(trait2, m, f1)
+    }
+
+  ch_hdl_in = ch_hdl_with_t1
+    .join(ch_neff_key, by: 0)
+    .map { trait2, meta, f1, f2 ->
+      def m = meta + [ beta2: "BETA", se2: "SE" ]
+      tuple(m, f1, f2)
+    }
+
+  HDL_L_PAIRS(
+    ch_hdl_in,
+    hdl_l_r,
+    ld_path,
+    bim_path
+  )
+
+  /*
+  SumHer (LDAK)
+  */
+
+  ch__sumher_pairs = Channel
+    .fromPath(params.pairs)
+    .splitCsv(header:true, sep:'\t')
+    .map { row ->
+      def meta = [
+        trait1: row.trait1.toString().trim(),
+        trait2: row.trait2.toString().trim()
+      ]
+      tuple(meta.trait1, meta.trait2, meta)
+    }
+
+  SUMHER_RUN(
+    ch_sumstats,
+    ch__sumher_pairs,
+    plink_dir,
+    calc_p,
+    ldak_bin
+  )
+
+  /*
+  LAVA
+  */
+
+  /*
+  MiXeR
+  */
+
+  /*
+  conjFDR
+  */
+
+  /*
+  Clump pleio hits
+  */
+
+  /*
+  define loci 
+  */
+
+  /*
+  Bayesian COLOC
+  */
+
+  /*
+  Fine-mapping (SuSiE)
+  */
+
+  /* 
+  FUMA-prep
+  */
+
+  /*
+  MAGMA
+  */
+
+  /*
+  Map genes 
+  */
+
+  /*
+  SMR + HEIDI
+  */
+
+  /*
+  SMR MAPPING / CORRECTION / INTERPRETATION
+  */
+
+  /*
+  sc-eQTL mapping
+  */
+
+  /*
+  sc-eQTL coloc
+  */
 }
