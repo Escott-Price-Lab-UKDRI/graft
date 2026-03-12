@@ -128,7 +128,7 @@ nextflow run main.nf \
 
 ** Note ** 
 
-> You can also run each method within [`Workflow/neurobridge`], individually like so =>
+> You can also run each method within [`workflows/neurobridge`], individually like so =>
 
 ```bash
 nextflow run main<method>.nf \
