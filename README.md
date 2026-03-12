@@ -72,29 +72,36 @@ nextflow run main.nf \
   --outdir results
 ```
 
-# Packages Used
+---
 
-## Heritability & Genetic Correlation
+## Tools
+
+**Heritability & Genetic Correlation**
+
 - **[LDSC](https://github.com/bulik/ldsc)** – Linkage Disequilibrium Score Regression  
 - **[SumHer](https://github.com/zietzm/sumher_rs)** – Summary-based Heritability Estimation  
-- **[HDL / HDL-L](https://github.com/zhenin/HDL)** – High-Definition Likelihood (Global and Local)  
+- **[HDL / HDL-L](https://github.com/zhenin/HDL)** – High-Definition Likelihood (global and local)  
 - **[MiXeR](https://github.com/precimed/mixer)** – Mixture of Regressions  
-- **[LAVA](https://github.com/josefin-werme/LAVA)** – Local Analysis of [co]Variant Association  
+- **[LAVA](https://github.com/josefin-werme/LAVA)** – Local analysis of genetic covariance  
 
-## Cross-trait Enrichment
-- **[condFDR / conjFDR](https://github.com/alexploner/cfdr.pleio)** – Conditional / Conjunctional False Discovery Rate  
+**Cross-trait Enrichment (Pleiotropy)**
 
-## GWAS Processing & Gene-Level Analysis
-- **[PLINK 2.0](https://www.cog-genomics.org/plink/2.0/)** – Whole-genome Association Analysis Toolset  
-- **[MAGMA](https://ctg.cncr.nl/software/magma)** – Multi-marker Analysis of GenoMic Annotation  
+- **[condFDR / conjFDR](https://github.com/alexploner/cfdr.pleio)** – Conditional / conjunctional false discovery rate  
 
-## Fine-mapping & Colocalisation
-- **[COLOC](https://cran.r-project.org/web/packages/coloc/)** – Bayesian Colocalisation Analysis  
-- **[SuSiE](https://github.com/stephenslab/susieR)** – Sum of Single Effects
+**GWAS Processing & Gene-level Analysis**
 
-## Functional Annotation & QTL Integration
-- **[FUMA](https://fuma.ctglab.nl/)** – Functional Mapping and Annotation  
-- **[SMR](https://yanglab.westlake.edu.cn/software/smr/)** – Summary-data-based Mendelian Randomization (GWAS–QTL integration framework)  
+- **[PLINK 2.0](https://www.cog-genomics.org/plink/2.0/)** – Whole-genome association analysis toolkit  
+- **[MAGMA](https://ctg.cncr.nl/software/magma)** – Gene-level and pathway enrichment analysis  
+
+**Fine-mapping & Colocalisation**
+
+- **[COLOC](https://cran.r-project.org/web/packages/coloc/)** – Bayesian colocalisation analysis  
+- **[SuSiE](https://github.com/stephenslab/susieR)** – Bayesian fine-mapping and credible set estimation  
+
+**Functional Annotation & QTL Integration**
+
+- **[FUMA](https://fuma.ctglab.nl/)** – Functional mapping and annotation of GWAS loci  
+- **[SMR + HEIDI](https://yanglab.westlake.edu.cn/software/smr/)** – Summary-data-based Mendelian randomization for GWAS–QTL integration  
 
 ---
 
