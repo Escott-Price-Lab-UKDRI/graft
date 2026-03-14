@@ -73,35 +73,23 @@ nextflow run main.nf \
   --pairs assets/ldsc_pairs.tsv \
   --outdir results
 ```
+> [!WARNING]
+> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
 
 ---
 
 ## Tools
-
-**Heritability & Genetic Correlation**
 
 - **[LDSC](https://github.com/bulik/ldsc)** – Linkage Disequilibrium Score Regression  
 - **[SumHer](https://github.com/zietzm/sumher_rs)** – Summary-based Heritability Estimation  
 - **[HDL / HDL-L](https://github.com/zhenin/HDL)** – High-Definition Likelihood (global and local)  
 - **[MiXeR](https://github.com/precimed/mixer)** – Mixture of Regressions  
 - **[LAVA](https://github.com/josefin-werme/LAVA)** – Local analysis of genetic covariance  
-
-**Cross-trait Enrichment (Pleiotropy)**
-
 - **[condFDR / conjFDR](https://github.com/alexploner/cfdr.pleio)** – Conditional / conjunctional false discovery rate  
-
-**GWAS Processing & Gene-level Analysis**
-
 - **[PLINK 2.0](https://www.cog-genomics.org/plink/2.0/)** – Whole-genome association analysis toolkit  
 - **[MAGMA](https://ctg.cncr.nl/software/magma)** – Gene-level and pathway enrichment analysis  
-
-**Fine-mapping & Colocalisation**
-
 - **[COLOC](https://cran.r-project.org/web/packages/coloc/)** – Bayesian colocalisation analysis  
 - **[SuSiE](https://github.com/stephenslab/susieR)** – Bayesian fine-mapping and credible set estimation  
-
-**Functional Annotation & QTL Integration**
-
 - **[FUMA](https://fuma.ctglab.nl/)** – Functional mapping and annotation of GWAS loci  
 - **[SMR + HEIDI](https://yanglab.westlake.edu.cn/software/smr/)** – Summary-data-based Mendelian randomization for GWAS–QTL integration  
 
