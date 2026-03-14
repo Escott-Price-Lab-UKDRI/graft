@@ -52,3 +52,27 @@ python prep_gwas_and_xqtl_for_coloc.py \
   --out_dir results/coloc_inputs
 ```
 
+```bash
+Rscript coloc.R \
+results/coloc_inputs/AD_SCZ/sQTL/data_prep/BrainMeta/chr15_58534174_59534174/gwas_AD_ADAM10_rs1427281_sumstats.tsv \
+results/coloc_inputs/AD_SCZ/sQTL/data_prep/BrainMeta/chr15_58534174_59534174/sQTL_BrainMeta_AD_ADAM10_rs1427281_sumstats.tsv \
+results/coloc_inputs/AD_SCZ/sQTL/data_prep/BrainMeta/chr15_58534174_59534174/coloc_AD_sQTL_ADAM10_rs1427281.tsv \
+cc \
+quant \
+AD \
+sQTL_BrainMeta_AD \
+0.5
+```
+
+```bash
+Rscript coloc.R \
+results/coloc_inputs/AD_SCZ/sQTL/data_prep/BrainMeta/chr15_58534174_59534174/gwas_SCZ_ADAM10_rs1427281_sumstats.tsv \
+results/coloc_inputs/AD_SCZ/sQTL/data_prep/BrainMeta/chr15_58534174_59534174/sQTL_BrainMeta_SCZ_ADAM10_rs1427281_sumstats.tsv \
+results/coloc_inputs/AD_SCZ/sQTL/data_prep/BrainMeta/chr15_58534174_59534174/coloc_SCZ_sQTL_ADAM10_rs1427281.tsv \
+cc \
+quant \
+SCZ \
+sQTL_BrainMeta_SCZ \
+0.5
+```
+
