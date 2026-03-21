@@ -15,8 +15,10 @@ nextflow.enable.dsl=2
 
 include { STAGE1_QC }   from './workflows/local/qc/main'
 include { STAGE1_LDSC } from './workflows/local/ldsc/main'
+include { STAGE1_HDL }  from './workflows/local/hdl/main'
 
 workflow {
     STAGE1_QC()
     STAGE1_LDSC()
+    STAGE1_HDL()
 }
