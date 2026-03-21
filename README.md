@@ -72,13 +72,12 @@ docker build -t neurobridge:1 -f env/Dockerfile env/
 ### Run neurobridge! (with Docker)
 
 ```bash
-nextflow run main.nf \
+nextflow run . \
   -profile docker \
   -c conf/local/nextflow.config \
-  --input assets/gwas.tsv \
-  --pairs assets/ldsc_pairs.tsv \
-  --outdir results
+  -params-file assets/params.stage1.yaml 
 ```
+
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
 
