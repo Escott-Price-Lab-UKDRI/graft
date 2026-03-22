@@ -13,12 +13,35 @@ nextflow.enable.dsl=2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */ 
 
-include { STAGE1_QC }   from './workflows/local/qc/main'
-include { STAGE1_LDSC } from './workflows/local/ldsc/main'
-include { STAGE1_HDL }  from './workflows/local/hdl/main'
+include { STAGE1_QC }      from './workflows/local/qc/main'
+include { STAGE1_LDSC }    from './workflows/local/ldsc/main'
+include { STAGE1_HDL }     from './workflows/local/hdl/main'
+include { STAGE1_SUMHER }  from './workflows/local/sumher/main'
+// include { STAGE1_LAVA } from './workflows/local/lava/main'
+include { STAGE1_CONJFDR } from './workflows/local/conjfdr/main'
+// include { STAGE1_DEF_LOCI } from './workflows/def_loci/lava/main'
+// include { STAGE1_COLOCALIZATION } from './workflows/local/coloc/main'
+// include { STAGE1_SuSiE } from './workflows/local/susie/main'
+// include { STAGE1_FUMA } from './workflows/local/fuma/main'
 
+
+// GRAFT: GWAS Relatedness, Architecture & Functional Trait mapping
 workflow {
-    STAGE1_QC()
+    /*STAGE1_QC()
     STAGE1_LDSC()
     STAGE1_HDL()
+    STAGE1_SUMHER()
+    // STAGE1_LAVA()
+    */
+    STAGE1_CONJFDR()
+    // MiXeR
+    // LAVA - 
+    // conjFDR -
+    // CLUMP - 
+    // COLOC -
+    // SUSIE -
+    // Bulk - SMR + HEIDI
+    // Bulk - Coloc
+    // sc - SMR + HEIDI
+    // sc - Coloc
 }
