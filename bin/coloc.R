@@ -15,7 +15,7 @@ s1 <- if (length(args) >= 8) as.numeric(args[8]) else 0.5
 s2 <- if (length(args) >= 9) as.numeric(args[9]) else 0.5
 
 dir.create(out_dir, recursive=TRUE, showWarnings=FALSE)
-out_file <- file.path(out_dir, paste(prefix, trait1, trait2, "coloc.tsv", sep="_"))
+out_file <- file.path(out_dir, paste0(prefix, "_coloc.tsv"))
 
 locus_dirs <- list.dirs(loci_dir, full.names=TRUE, recursive=FALSE)
 locus_dirs <- locus_dirs[basename(locus_dirs) != basename(loci_dir)]

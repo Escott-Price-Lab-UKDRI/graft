@@ -8,7 +8,7 @@ nextflow.enable.dsl=2
 >    error
 */
 
-include { GWAS_COLOCALISATION } from '../../modules/gwas_coloc'
+include { GWAS_COLOCALISATION } from '../../modules/local/gwas_coloc'
 
 workflow {
 

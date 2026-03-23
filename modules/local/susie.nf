@@ -4,7 +4,7 @@ nextflow.enable.dsl=2
 process SUSIE_OVERLAP_MAP {
 
     tag "${meta.pair}_${meta.locus}_L${L}"
-    publishDir "${params.outdir}/SuSiE/${meta.pair}/${meta.locus}/L${L}", mode: 'copy', overwrite: true
+    publishDir { "${params.outdir}/SuSiE/${meta.pair}/${meta.locus}/L${L}" }, mode: 'copy', overwrite: true
 
     input:
     tuple val(meta), path(gwas1), path(gwas2), path(ld_matrix)

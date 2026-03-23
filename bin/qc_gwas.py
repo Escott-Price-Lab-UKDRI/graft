@@ -257,7 +257,7 @@ def main():
     df = filter_maf_info(df, maf_min=a.maf_min, info_min=a.info_min, info_col=info_out_col, require_info=a.require_info)
     count("after_maf_info", df)
     required = [
-        a.snp_col, a.a1_col, a.a2_col, frq_col, n_out_col,
+        a.snp_col, a.a1_col, a.a2_col, frq_col,
         a.beta_col, a.se_col, a.p_col, a.chr_col, a.pos_col
     ]
     df = drop_missing_required(df, required)

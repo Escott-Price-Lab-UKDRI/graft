@@ -20,8 +20,7 @@ hm3_path <- args[12]
 ld_path <- args[13]
 wld_path <- args[14]
 
-in_files <- c(pheno1_file, pheno2_file)
-trait_names <- c(pheno1_name, pheno2_name)
+pair_name <- paste0(pheno1_name, "_", pheno2_name)
 
 N1_eff <- 4/(1/case1 + 1/ctrl1)
 N2_eff <- 4/(1/case2 + 1/ctrl2)
@@ -32,6 +31,27 @@ sample_prev2 <- case2/(case2 + ctrl2)
 sample_prev <- c(sample_prev1, sample_prev2)
 
 pop_prev <- c(pop_prev1, pop_prev2)
+
+prep_for_munge <- function(infile, trait){
+  dt <- fread(infile, sep = "\t", na.strings = c("", "NA", "NaN", "nan", "NULL", "null"))
+  if (!"INFO" %in% names(dt)) dt[, INFO := 1]
+  dt[, INFO := as.numeric(INFO)]
+  dt[is.na(INFO), INFO := 1]
+  dt[, N := as.numeric(N)]
+  dt[, BETA := as.numeric(BETA)]
+  dt[, SE := as.numeric(SE)]
+  dt[, P := as.numeric(P)]
+  tmp <- file.path(getwd(), paste0(trait, ".munging_input.tsv"))
+  fwrite(dt, tmp, sep = "\t", na = "NA")
+  tmp
+}
+
+in_files <- c(
+  prep_for_munge(pheno1_file, pheno1_name),
+  prep_for_munge(pheno2_file, pheno2_name)
+)
+
+trait_names <- c(pheno1_name, pheno2_name)
 
 munge(
   files = in_files,
@@ -47,7 +67,6 @@ stopifnot(all(file.exists(out_files)))
 
 outdir <- out_root
 dir.create(outdir, showWarnings=FALSE, recursive=TRUE)
-pair_name <- paste0(pheno1_name,"_",pheno2_name)  
 
 file.copy(out_files[1], file.path(outdir, paste0(trait_names[1], ".sumstats.gz")), overwrite=TRUE)
 file.copy(out_files[2], file.path(outdir, paste0(trait_names[2], ".sumstats.gz")), overwrite=TRUE)
@@ -58,7 +77,7 @@ ldsc_out <- ldsc(
   population.prev = pop_prev,
   ld = ld_path,
   wld = wld_path,
-  ldsc.log = TRUE
+  ldsc.log = pair_name
 )
 
 uni_1 <- ldsc(

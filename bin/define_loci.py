@@ -4,23 +4,21 @@ import pandas as pd
 import os
 import argparse
 
-dat_base = Path("../data")
-base = Path("../outputs")
-results_base = Path("../results")
-out_dir = results_base / "defined_loci"
-out_dir.mkdir(parents=True, exist_ok=True)
-
-def define_loci(pheno1_prefix: str,
+def define_loci(pheno1: str,
+                pheno2: str,
+                pheno1_prefix: str,
                 pheno2_prefix: str,
+                clump_path: str,
+                out_dir: str,
                 window: int):
 
-    pheno1_df = pd.read_csv(dat_base / pheno1_prefix / "post-qc" / f"{pheno1_prefix}.ldsc_ready_neff.tsv", sep="\t")
-    pheno2_df = pd.read_csv(dat_base / pheno2_prefix / "post-qc" / f"{pheno2_prefix}.ldsc_ready_neff.tsv", sep="\t")
+    pheno1_df = pd.read_csv(pheno1, sep="\t")
+    pheno2_df = pd.read_csv(pheno2, sep="\t")
     pheno1_df.rename(columns={"POS": "BP"}, inplace=True)
     pheno2_df.rename(columns={"POS": "BP"}, inplace=True)
-    out = Path(out_dir / f"{pheno1_prefix}_{pheno2_prefix}")
+    out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
-    clump_path = base / f"clumping/{pheno1_prefix}_{pheno2_prefix}/{pheno1_prefix}-{pheno2_prefix}"
+    clump_path = Path(clump_path)
     rows = []
     for dir in os.listdir(clump_path):
         full_path = clump_path / dir
@@ -39,6 +37,7 @@ def define_loci(pheno1_prefix: str,
             })
     lead_snps_df = pd.DataFrame(rows, columns=["trait1", "trait2", "pair", "locus", "coords", "lead_snp"])
     lead_snps_df = lead_snps_df.sort_values("coords").reset_index(drop=True)
+    lead_snps_df.to_csv(out / "lead_snps.tsv", sep="\t", index=False)
     for _, r in lead_snps_df.iterrows():
         snp = r["lead_snp"]
         lead1 = pheno1_df.loc[pheno1_df["SNP"] == snp].iloc[0]
@@ -62,11 +61,21 @@ def define_loci(pheno1_prefix: str,
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--pheno1", required=True)
+    ap.add_argument("--pheno2", required=True)
     ap.add_argument("--pheno1_prefix", required=True)
     ap.add_argument("--pheno2_prefix", required=True)
+    ap.add_argument("--clump_path", required=True)
+    ap.add_argument("--out_dir", required=True)
     ap.add_argument("--window", type=int, default=500000)
     args = ap.parse_args()
-    define_loci(args.pheno1_prefix, args.pheno2_prefix, args.window)
+    define_loci(args.pheno1,
+                args.pheno2,
+                args.pheno1_prefix,
+                args.pheno2_prefix,
+                args.clump_path,
+                args.out_dir,
+                args.window)
 
 if __name__ == "__main__":
     main()

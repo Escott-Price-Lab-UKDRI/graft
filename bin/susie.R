@@ -12,10 +12,8 @@ L              <- as.numeric(args[3])
 R_path         <- args[4]
 n              <- as.numeric(args[5])
 max_iter       <- as.numeric(args[6])
+out_dir        <- if (length(args) >= 7) args[7] else "."
 
-locus_dir <- basename(dirname(locus_sumstats))
-out_dir <- file.path("..", "outputs", "susie", pheno_id, locus_dir, paste0("L", L))
-dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 df <- read.table(locus_sumstats, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 R <- as.matrix(read.table(gzfile(R_path), header = FALSE))
 storage.mode(R) <- "double"
@@ -23,20 +21,17 @@ storage.mode(R) <- "double"
 run_susie <- function(df, R, L=1, n, estimate_residual_variance=FALSE, max_iter=5000) {
   z <- df$BETA / df$SE
   n_use <- median(df$N, na.rm = TRUE)
-  
-  # penalise R
+
   R <- (R + t(R))/2
   diag(R) <- 1
   lambda <- 1e-3
   R <- (1 - lambda) * R + lambda * diag(ncol(R))
-  
-  # cap L by effective rank of R
+
   ev <- eigen(R, symmetric = TRUE, only.values = TRUE)$values
   rankR <- sum(ev > 1e-4)
   L_use <- min(L, max(1, rankR - 1))
   message(sprintf("rankR=%d | requested L=%d | using L=%d", rankR, L, L_use))
-  
-  # susie
+
   fit <- susie_rss(
     z = z,
     R = R,
@@ -45,7 +40,7 @@ run_susie <- function(df, R, L=1, n, estimate_residual_variance=FALSE, max_iter=
     estimate_residual_variance = estimate_residual_variance,
     max_iter = max_iter
   )
-  
+
   cs_list <- fit$sets$cs
   cs_df <- data.frame()
   if (!is.null(cs_list) && length(cs_list) > 0) {
@@ -65,7 +60,7 @@ run_susie <- function(df, R, L=1, n, estimate_residual_variance=FALSE, max_iter=
       cs_df <- rbind(cs_df, df_cs)
     }
   }
-  
+
   list(fit = fit, cs = cs_df)
 }
 
@@ -76,7 +71,7 @@ get_cs95 <- function(df, pip, level = 0.95) {
   k <- which(cum >= level)[1]
   if (is.na(k)) k <- length(pip_sorted)
   idx <- o[1:k]
-  
+
   data.frame(
     SNP = df$SNP[idx],
     BP  = df$BP[idx],
@@ -87,8 +82,10 @@ get_cs95 <- function(df, pip, level = 0.95) {
   )
 }
 
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
 res <- run_susie(
-  df, 
+  df,
   R,
   L = L,
   n = n,
@@ -106,6 +103,6 @@ tag <- paste0(pheno_id, "_L", L)
 res_cs95 <- get_cs95(df, res$fit$pip, level = 0.95)
 pip_df <- pip_df[order(pip_df$PIP, decreasing=TRUE), ]
 saveRDS(res$fit, file.path(out_dir, paste0("res_", tag, ".rds")))
-write.table(res$cs,  file.path(out_dir, paste0("cs_",  tag, ".tsv")), sep="\t", row.names=FALSE, quote=FALSE)
-write.table(pip_df,  file.path(out_dir, paste0("pip_", tag, ".tsv")), sep="\t", row.names=FALSE, quote=FALSE)
-write.table(res_cs95,file.path(out_dir, paste0("cs95_",tag, ".tsv")), sep="\t", row.names=FALSE, quote=FALSE)
+write.table(res$cs,   file.path(out_dir, paste0("cs_",   tag, ".tsv")), sep="\t", row.names=FALSE, quote=FALSE)
+write.table(pip_df,   file.path(out_dir, paste0("pip_",  tag, ".tsv")), sep="\t", row.names=FALSE, quote=FALSE)
+write.table(res_cs95, file.path(out_dir, paste0("cs95_", tag, ".tsv")), sep="\t", row.names=FALSE, quote=FALSE)

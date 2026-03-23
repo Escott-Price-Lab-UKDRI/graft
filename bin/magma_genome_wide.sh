@@ -5,24 +5,6 @@
 
 set -euo pipefail
 
-# chmod +x magma.sh && ./src/magma/magma.sh \
-  #  /outputs/magma/AD/MAGMA \
-  #  /Users/c24102394/MAGMA/ref/g1000_eur \
-  #  /Users/c24102394/MAGMA/ref/g1000_eur.bim \
-  #  /Users/c24102394/MAGMA/ref/NCBI37.3.gene.loc \
-  #  AD \
-  #  /data/Main/AD/post-ldsc/AD.sumstats.gz
-
-# per locus / not genome-wide
-# ./magma_locus.sh \
-  #  /outputs/magma/AD/locus1 \
-  #  /Users/c24102394/MAGMA/ref/g1000_eur \
-  #  /Users/c24102394/MAGMA/ref/g1000_eur.snp.loc \
-  #  /Users/c24102394/MAGMA/ref/NCBI37.3.gene.loc \
-  #  AD \
-  #  /data/Main/AD/post-ldsc/AD.sumstats.gz \
-  #  /data/loci/locus1.snps.txt
-
 if [[ $# -ne 6 ]]; then
   echo "Usage: $0 OUT_DIR BFILE_PREFIX SNP_LOC GENE_LOC TRAIT_NAME SUMSTATS_GZ" >&2
   exit 1
@@ -35,7 +17,8 @@ GENE_LOC="$4"
 TRAIT="$5"
 SUMSTATS="$6"
 
-MAGMA_BIN="${MAGMA_BIN:-/Users/c24102394/MAGMA/magma}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MAGMA_BIN="${MAGMA_BIN:-${SCRIPT_DIR}/../ref/magma/software/magma}"
 
 if [[ ! -x "$MAGMA_BIN" ]]; then
   echo "ERROR: MAGMA binary not executable at: $MAGMA_BIN" >&2
@@ -52,7 +35,11 @@ mkdir -p "$OUT_DIR"
 cd "$OUT_DIR"
 
 if [[ ! -f genes_b37.genes.annot ]]; then
-  "${MAGMA_CMD[@]}" --annotate --snp-loc "$SNP_LOC" --gene-loc "$GENE_LOC" --out genes_b37
+  "${MAGMA_CMD[@]}" \
+    --annotate \
+    --snp-loc "$SNP_LOC" \
+    --gene-loc "$GENE_LOC" \
+    --out genes_b37
 fi
 
 PV_FILE="${TRAIT}_for_magma.txt"
@@ -90,7 +77,11 @@ if __name__ == "__main__":
     main()
 PY
 
-"${MAGMA_CMD[@]}" --bfile "$BFILE_PREFIX" --pval "$PV_FILE" use=SNP,P ncol=N --gene-annot genes_b37.genes.annot --out "${TRAIT}_magma"
+"${MAGMA_CMD[@]}" \
+  --bfile "$BFILE_PREFIX" \
+  --pval "$PV_FILE" use=SNP,P ncol=N \
+  --gene-annot genes_b37.genes.annot \
+  --out "${TRAIT}_magma"
 
 MAPPED_TSV="${TRAIT}_magma.genes.mapped.tsv"
 

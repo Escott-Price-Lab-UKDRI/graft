@@ -1,11 +1,11 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-include { QC_GWAS }        from '../../modules/qc_gwas'
-include { ADD_NEFF }       from '../../modules/add_neff'
-include { LAVA_GWAS_PREP } from '../../modules/lava_prep'
-include { MAKE_INFO_FILE } from '../../modules/lava_prep'
-include { LAVA }           from '../../modules/lava'
+include { QC_GWAS }        from '../../modules/local/qc_gwas'
+include { ADD_NEFF }       from '../../modules/local/add_neff'
+include { LAVA_GWAS_PREP } from '../../modules/local/lava_prep'
+include { MAKE_INFO_FILE } from '../../modules/local/lava_prep'
+include { LAVA }           from '../../modules/local/lava'
 
 workflow {
 

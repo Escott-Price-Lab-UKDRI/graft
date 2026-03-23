@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-include { QC_GWAS }                    from '../../modules/qc_gwas'
-include { ADD_NEFF }                   from '../../modules/add_neff'
-include { CONJFDR_DATA_PREP; CONJFDR } from "../../modules/conjFDR"
+include { QC_GWAS }                    from '../../modules/local/qc_gwas'
+include { ADD_NEFF }                   from '../../modules/local/add_neff'
+include { CONJFDR_DATA_PREP; CONJFDR } from "../../modules/local/conjFDR"
 
 workflow {
 
@@ -15,7 +15,7 @@ workflow {
 
     // refs ~~~~~~~~
     conjfdr_refdir = file("${workflow.launchDir}/ref/conjFDR")
-    ref_bfile = file("${workflow.launchDir}/ref/ldsc/1000G_EUR_Phase3_plink/1000G.EUR.QC")
+    ref_bfile = "${workflow.launchDir}/ref/ldsc/1000G_EUR_Phase3_plink/1000G.EUR.QC"
 
     if( !params.input )
         error "Missing --input (samplesheet tsv)"
@@ -102,7 +102,8 @@ workflow {
     CONJFDR(
         ch_harmonised,
         conjfdr_r,
-        conjfdr_refdir
+        conjfdr_refdir,
+        ref_bfile
     )
 }
 

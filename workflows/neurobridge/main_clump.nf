@@ -5,8 +5,8 @@ nextflow.enable.dsl=2
 > Need to check whether conjFDR outputs/ are there, if not print(run "main_conjfdr.nf first!")
 */
 
-include { LD_CLUMP }    from '../../modules/ld_clump'
-include { DEFINE_LOCI } from '../../modules/def_loci'
+include { LD_CLUMP }    from '../../modules/local/ld_clump'
+include { DEFINE_LOCI } from '../../modules/local/def_loci'
 
 workflow {
 

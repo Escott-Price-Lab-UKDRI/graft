@@ -1,8 +1,8 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-include { GEN_LD_MATRIX }     from '../../modules/ld_matrix'
-include { SUSIE_OVERLAP_MAP } from '../../modules/susie'
+include { GEN_LD_MATRIX }     from '../../modules/local/ld_matrix'
+include { SUSIE_OVERLAP_MAP } from '../../modules/local/susie'
 
 workflow {
 

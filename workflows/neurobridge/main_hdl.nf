@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-include { QC_GWAS }  from '../../modules/qc_gwas'
-include { ADD_NEFF } from '../../modules/add_neff'
-include { HDL_L }    from '../../modules/hdl_l'
+include { QC_GWAS }  from '../../modules/local/qc_gwas'
+include { ADD_NEFF } from '../../modules/local/add_neff'
+include { HDL_L }    from '../../modules/local/hdl_l'
 
 workflow {
 

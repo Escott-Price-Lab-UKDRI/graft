@@ -1,10 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-// nextflow run ./workflows/neurobridge/main_qc.nf -profile docker -c conf/local/nextflow.config --input assets/gwas.tsv --outdir results
+// nextflow run workflows/neurobridge/main_qc.nf -profile docker -c conf/local/nextflow.config --input assets/gwas.tsv --outdir results
 
-include { QC_GWAS }  from '../../modules/qc_gwas'
-include { ADD_NEFF } from '../../modules/add_neff'
+include { QC_GWAS }  from '../../modules/local/qc_gwas'
+include { ADD_NEFF } from '../../modules/local/add_neff'
 
 workflow {
   if( !params.input )
@@ -45,6 +45,9 @@ workflow {
       tuple(meta, file(row.gwas))
     }
 
-  ch_qc = QC_GWAS(ch_in).ldsc_ready
-  ADD_NEFF(ch_qc)
+  qc_script = file("${workflow.launchDir}/bin/qc_gwas.py")
+  neff_script = file("${workflow.launchDir}/bin/compute_neff.py")
+
+  ch_qc = QC_GWAS(ch_in, qc_script).ldsc_ready
+  ADD_NEFF(ch_qc, neff_script)
 }

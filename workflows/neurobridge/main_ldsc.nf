@@ -1,11 +1,11 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-// nextflow run workflows/neurobridge/main_neff.nf -profile docker -c conf/local/nextflow.config --input assets/gwas.tsv --outdir results
+// nextflow run workflows/neurobridge/main_ldsc.nf -profile docker -c conf/local/nextflow.config --input assets/gwas.tsv --pairs assets/ldsc_pairs.tsv --outdir results
 
-include { QC_GWAS } from '../../modules/qc_gwas'
-include { ADD_NEFF } from '../../modules/add_neff'
-include { LDSC_PAIRWISE } from '../../subworkflows/ldsc_pairwise'
+include { QC_GWAS } from '../../modules/local/qc_gwas'
+include { ADD_NEFF } from '../../modules/local/add_neff'
+include { LDSC } from '../../modules/local/ldsc'
 
 workflow {
   if( !params.input )
@@ -49,7 +49,17 @@ workflow {
       tuple(meta, file(row.gwas))
     }
 
-  ch_neff = ADD_NEFF(QC_GWAS(ch_in).ldsc_ready).ldsc_neff
+  qc_script = file("${workflow.launchDir}/bin/qc_gwas.py")
+  neff_script = file("${workflow.launchDir}/bin/compute_neff.py")
+  ldsc_r = file("${workflow.launchDir}/bin/ldsc.R")
+
+  // refs
+  hm3_snplist = file("${workflow.launchDir}/ref/ldsc/w_hm3.snplist")
+  ld_chr_dir = file("${workflow.launchDir}/ref/ldsc/eur_w_ld_chr")
+  wld_dir = file("${workflow.launchDir}/ref/ldsc/weights_hm3_no_hla")
+
+  ch_qc   = QC_GWAS(ch_in, qc_script).ldsc_ready
+  ch_neff = ADD_NEFF(ch_qc, neff_script).ldsc_neff
   ch_sum  = ch_neff.map { meta, f -> tuple(meta.id, f) }
 
   ch_pairs = Channel
@@ -77,5 +87,5 @@ workflow {
     .join(ch_sum, by: 0)
     .map { trait2, meta, f1, f2 -> tuple(meta, f1, f2) }
 
-  LDSC_PAIRWISE(ch_ldsc_in)
+  LDSC(ch_ldsc_in, ldsc_r, hm3_snplist, ld_chr_dir, wld_dir)
 }

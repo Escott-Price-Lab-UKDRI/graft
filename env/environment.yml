@@ -1,4 +1,4 @@
-name: neurobridge_v1
+name: neurobridge_v1 # brew install zstd
 channels:
   - conda-forge
   - bioconda

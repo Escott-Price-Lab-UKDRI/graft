@@ -1,40 +1,48 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PHENO1_ID="${1:-}"
-PHENO2_ID="${2:-}"
-[ -n "${PHENO1_ID}" ] && [ -n "${PHENO2_ID}" ] || { echo "usage: bin/gen_ld_matrix.sh PHENO1 PHENO2"; exit 1; }
-BASE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-LOCI_DIR="${BASE_DIR}/outputs/defined_loci/${PHENO1_ID}_${PHENO2_ID}"
+pheno1_id="${1:-}"
+pheno2_id="${2:-}"
+loci_dir="${3:-}"
+ref_prefix="${4:-}"
 
-for LOCUS_DIR in "${LOCI_DIR}"/locus_chr*_*_*; do
-  [ -d "${LOCUS_DIR}" ] || continue
-  LOCUS_NAME="$(basename "${LOCUS_DIR}")"
-  CHR_VAR="$(echo "${LOCUS_NAME}" | cut -d'_' -f2 | sed 's/^chr//')"
-  cd "${LOCUS_DIR}"
-  awk -F'\t' 'NR>1{print $1}' "gwas_${PHENO1_ID}.ldgwas.tsv" | sort -u > "${PHENO1_ID}.snps"
-  awk -F'\t' 'NR>1{print $1}' "gwas_${PHENO2_ID}.ldgwas.tsv" | sort -u > "${PHENO2_ID}.snps"
-  comm -12 "${PHENO1_ID}.snps" "${PHENO2_ID}.snps" > "gwas.snps.intersection"
+[ -n "${pheno1_id}" ] && [ -n "${pheno2_id}" ] && [ -n "${loci_dir}" ] && [ -n "${ref_prefix}" ] || {
+  echo "usage: bin/gen_ld_matrix.sh PHENO1 PHENO2 LOCI_DIR REF_PREFIX"
+  exit 1
+}
+
+task_root="$(pwd)"
+ref_prefix="${task_root}/${ref_prefix}"
+find "${loci_dir}" -type d -name 'locus_chr*_*_*' | while read -r locus_dir; do
+  locus_name="$(basename "${locus_dir}")"
+  chr_var="$(echo "${locus_name}" | cut -d'_' -f2 | sed 's/^chr//')"
+  cd "${locus_dir}"
+  awk -F'\t' 'NR>1{print $1}' "gwas_${pheno1_id}.ldgwas.tsv" | sort -u > "${pheno1_id}.snps"
+  awk -F'\t' 'NR>1{print $1}' "gwas_${pheno2_id}.ldgwas.tsv" | sort -u > "${pheno2_id}.snps"
+  comm -12 "${pheno1_id}.snps" "${pheno2_id}.snps" > gwas.snps.intersection
   mkdir -p ld_gwas
+
   plink \
-    --bfile "${BASE_DIR}/ref/ldsc/1000G_EUR_Phase3_plink/1000G.EUR.QC.${CHR_VAR}" \
-    --extract "gwas.snps.intersection" \
+    --bfile "${ref_prefix}.${chr_var}" \
+    --extract gwas.snps.intersection \
     --maf 0.01 \
     --geno 0.02 \
     --make-bed \
-    --out "ld_gwas/locus_tmp"
-  cut -f2 "ld_gwas/locus_tmp.bim" > "ld_gwas/snps_in_ld_order.txt"
+    --out ld_gwas/locus_tmp
+
+  cut -f2 ld_gwas/locus_tmp.bim > ld_gwas/snps_in_ld_order.txt
 
   plink \
-    --bfile "ld_gwas/locus_tmp" \
+    --bfile ld_gwas/locus_tmp \
     --r square gz \
-    --out "ld_gwas/locus"
+    --out ld_gwas/locus
 
   python - <<PY
 import pandas as pd
 from pathlib import Path
 
 order = pd.read_csv("ld_gwas/snps_in_ld_order.txt", header=None)[0].astype(str).tolist()
+
 def reorder(f):
     f = Path(f)
     df = pd.read_csv(f, sep="\\t", dtype={"SNP": str})
@@ -43,9 +51,9 @@ def reorder(f):
     out = f.with_name(f.name.replace(".ldgwas.tsv", ".ldorder.tsv"))
     df.loc[keep].reset_index().to_csv(out, sep="\\t", index=False)
 
-reorder("gwas_${PHENO1_ID}.ldgwas.tsv")
-reorder("gwas_${PHENO2_ID}.ldgwas.tsv")
+reorder("gwas_${pheno1_id}.ldgwas.tsv")
+reorder("gwas_${pheno2_id}.ldgwas.tsv")
 PY
 
-  cd "${BASE_DIR}"
+  cd "${task_root}"
 done

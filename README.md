@@ -14,18 +14,19 @@
 
 ## Authors
 
-**Guillermo Comesaña Cimadevila¹ ²** · Dervis Salih¹ ³ · Nicholas Bray² · Emily Simmonds¹ · Valentina Escott-Price¹ ²
+**Guillermo Comesaña Cimadevila¹ ² ³** · Dervis Salih¹ ³ · Jeremy Hall² ³ · Nicholas Bray ² · Emily Simmonds ¹ · Valentina Escott-Price¹ ²  
 
-¹ UK Dementia Research Institute, UK  
-² MRC Centre for Neuropsychiatric Genetics & Genomics, Cardiff University, Cardiff, UK  
-³ Department of Neuroscience, Physiology and Pharmacology, University College London, London, UK  
+<sup>¹</sup> UK Dementia Research Institute, UK  
+<sup>²</sup> MRC Centre for Neuropsychiatric Genetics & Genomics, Cardiff University, Cardiff, UK  
+<sup>³</sup> MeOmics Precision Medicine Ltd, Cardiff, UK  
+<sup>⁴</sup> Department of Neuroscience, Physiology and Pharmacology, University College London, London, UK
 
 ---
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB)]() 
 [![R](https://img.shields.io/badge/R-4.4%2B-276DC3)]() 
 [![Nextflow](https://img.shields.io/badge/version-%E2%89%A525.04.0-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
-[![nf-core template version](https://img.shields.io/badge/nf--core_template-3.5.2-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.5.2)
+[![nf-core version](https://img.shields.io/badge/nf--core_template-3.5.2-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.5.2)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
@@ -45,9 +46,15 @@
 
 ## Steps
 
-### Download reference data!
+### Download reference data
 
-> Download **[here](https://doi.org/10.5281/zenodo.18986935)** 
+> Download it **[here](https://doi.org/10.5281/zenodo.18986935)**.
+
+---
+
+### Adjust parameters
+
+> Configure [`assets/params.stage1.yaml`] to your desired parameter set (**default parameters provided**).
 
 ---
 
@@ -66,13 +73,12 @@ docker build -t neurobridge:1 -f env/Dockerfile env/
 ### Run neurobridge! (with Docker)
 
 ```bash
-nextflow run main.nf \
+nextflow run . \
   -profile docker \
   -c conf/local/nextflow.config \
-  --input assets/gwas.tsv \
-  --pairs assets/ldsc_pairs.tsv \
-  --outdir results
+  -params-file assets/params.stage1.yaml 
 ```
+
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
 
@@ -135,9 +141,7 @@ nextflow run main.nf \
 nextflow run workflows/neurobridge/main_<input_method>.nf \
   -profile docker \
   -c conf/local/nextflow.config \
-  --input assets/gwas.tsv \
-  --pairs assets/ldsc_pairs.tsv \
-  --outdir results -resume
+  -params-file assets/params.stage1.yaml 
 ```
 
 ---
