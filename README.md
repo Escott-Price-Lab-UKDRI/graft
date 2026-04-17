@@ -37,13 +37,7 @@
 
 ## Pipeline
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/7979b819-725d-4585-9379-d61b6b308e5f<img width="2300" height="1000" alt="nf-core-graft_logo_light" src="https://github.com/user-attachments/assets/1d5282d5-66b0-48d4-b28d-77478878837b" />
-<img width="2300" height="1000" alt="nf-core-graft_logo_light" src="https://github.com/user-attachments/assets/acf853dd-e8b3-48c0-aaf0-54954221d971" />
-"
-       alt="pipeline"
-       width="1200">
-</p>
+<img width="1247" height="1209" alt="graft" src="https://github.com/user-attachments/assets/e76e3f19-76f1-4dcd-a734-9c09820f0f64" />
 
 ---
 
