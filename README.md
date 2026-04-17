@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/a4b71c06-9193-440b-aad4-29231eb2e2c1"
+  <img src="https://github.com/user-attachments/assets/24c5c653-8a83-4a47-9604-6427ab210c65"
        alt="nf-core-neurobridge_logo_light"
        width="1600">
 </p>
@@ -8,18 +8,19 @@
 
 ## Introduction
 
-**Neurobridge** is a two-stage bioinformatics pipeline which takes two **genome-wide association study (GWAS) summary statistics** corresponding to two distinct traits (typically trait pairs where a pleiotropic relationship may be hypothesised). The pipeline covers analyses from estimating global heritability to functional approaches using **bulk and single-cell xQTL datasets**. In **Stage I**, neurobridge performs GWAS QC and computes **SNP heritability**, polygenicity and discoverability, **global genetic correlation** (across multiple methods), and local genetic correlation. It then identifies loci showing evidence of pleiotropic association (via **conjFDR**) and performs **Bayesian colocalisation** and **fine-mapping** to prioritise candidate causal variants/loci. Following this stage, loci can be annotated using **FUMA** (performed manually) to map variants to genes and obtain basic functional annotation. In **Stage II**, neurobridge focuses on functional interpretation of the prioritised loci by integrating bulk and single-cell xQTL datasets and performing **gene prioritisation (via SMR)** and consequent GWAS-to-xQTL colocalisation of priorisited genes. In essence, Stage II adds multi-layer biological evidence to the genetic findings from **Stage I**.
+**GRAFT** is a two-stage bioinformatics pipeline which takes two **genome-wide association study (GWAS) summary statistics** corresponding to two distinct traits (typically trait pairs where a pleiotropic relationship may be hypothesised). The pipeline covers analyses from estimating global heritability to functional approaches using **bulk and single-cell xQTL datasets**. In **Stage I**, neurobridge performs GWAS QC and computes **SNP heritability**, polygenicity and discoverability, **global genetic correlation** (across multiple methods), and local genetic correlation. It then identifies loci showing evidence of pleiotropic association (via **conjFDR**) and performs **Bayesian colocalisation** and **fine-mapping** to prioritise candidate causal variants/loci. Following this stage, loci can be annotated using **FUMA** (performed manually) to map variants to genes and obtain basic functional annotation. In **Stage II**, neurobridge focuses on functional interpretation of the prioritised loci by integrating bulk and single-cell xQTL datasets and performing **gene prioritisation (via SMR)** and consequent GWAS-to-xQTL colocalisation of priorisited genes. In essence, Stage II adds multi-layer biological evidence to the genetic findings from **Stage I**.
 
 ---
 
 ## Authors
 
-**Guillermo Comesaña Cimadevila¹ ² ³** · Dervis Salih¹ ³ · Jeremy Hall² ³ · Nicholas Bray ² · Emily Simmonds ¹ · Valentina Escott-Price¹ ²  
+**Guillermo Comesaña Cimadevila¹ ² ³** · Alfie Thain⁴ · Philip Taylor¹ ² · Jeremy Hall² ³ · Dervis Salih¹ ⁵ · Nicholas Bray² · Emily Simmonds¹ · Valentina Escott-Price¹ ²†  
 
 <sup>¹</sup> UK Dementia Research Institute, UK  
 <sup>²</sup> MRC Centre for Neuropsychiatric Genetics & Genomics, Cardiff University, Cardiff, UK  
-<sup>³</sup> MeOmics Precision Medicine Ltd, Cardiff, UK  
-<sup>⁴</sup> Department of Neuroscience, Physiology and Pharmacology, University College London, London, UK
+<sup>³</sup> MeOmics Technology Ltd, Cardiff, UK  
+<sup>⁴</sup> Division of Psychiatry, University College London, London, UK  
+<sup>⁵</sup> Department of Neuroscience, Physiology and Pharmacology, University College London, London, UK  
 
 ---
 
@@ -36,11 +37,7 @@
 
 ## Pipeline
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/a15c8413-a93c-43b7-b647-b0fa5a38def2"
-       alt="pipeline"
-       width="1200">
-</p>
+<img width="1247" height="1209" alt="graft" src="https://github.com/user-attachments/assets/e76e3f19-76f1-4dcd-a734-9c09820f0f64" />
 
 ---
 
