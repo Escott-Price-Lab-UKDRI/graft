@@ -3,7 +3,7 @@ nextflow.enable.dsl=2
 
 include { QC_GWAS }    from '../../modules/local/qc_gwas'
 include { ADD_NEFF }   from '../../modules/local/add_neff'
-include { SUMHER_RUN } from '../../subworkflows/sumher_run'
+// include { SUMHER_RUN } from '../../subworkflows/sumher_run'
 
 workflow {
 
@@ -71,6 +71,8 @@ workflow {
       tuple(meta.trait1, meta.trait2, meta)
     }
 
+    /*
+
     SUMHER_RUN(
     ch_sumstats,
     ch_pairs,
@@ -78,4 +80,5 @@ workflow {
     calc_p,
     ldak_bin
   )
+  */
 }

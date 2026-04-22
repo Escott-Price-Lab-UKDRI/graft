@@ -4,14 +4,13 @@ nextflow.enable.dsl=2
 process DEFINE_LOCI {
 
     tag "${meta.trait1}_${meta.trait2}_define_loci"
-    publishDir "${params.outdir}/defined_loci/${meta.trait1}_${meta.trait2}", mode: 'copy', overwrite: true
 
     input:
     tuple val(meta), path(gwas1), path(gwas2), path(clump_dir)
     path define_loci_py
 
     output:
-    tuple val(meta), path("defined_loci"), emit: loci
+    tuple val(meta), path("${meta.trait1}_${meta.trait2}"), emit: loci
 
     script:
     """
@@ -22,7 +21,8 @@ process DEFINE_LOCI {
         PYBIN="python3"
     fi
 
-    mkdir -p defined_loci
+    OUTDIR="${meta.trait1}_${meta.trait2}"
+    mkdir -p "\$OUTDIR"
 
     "\$PYBIN" "${define_loci_py}" \\
         --pheno1 "${gwas1}" \\
@@ -30,7 +30,7 @@ process DEFINE_LOCI {
         --pheno1_prefix "${meta.trait1}" \\
         --pheno2_prefix "${meta.trait2}" \\
         --clump_path "${clump_dir}" \\
-        --out_dir defined_loci \\
+        --out_dir "\$OUTDIR" \\
         --window "${params.window}"
     """
 }

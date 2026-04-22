@@ -2,8 +2,8 @@
 nextflow.enable.dsl=2
 
 process QC_GWAS {
+  
   tag "${meta.id}"
-  publishDir "${params.outdir}/qc/${meta.id}", mode: 'copy', overwrite: true
 
   input:
   tuple val(meta), path(gwas)

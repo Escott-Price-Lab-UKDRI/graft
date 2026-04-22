@@ -4,7 +4,6 @@ nextflow.enable.dsl=2
 process RG {
 
     tag "${meta.trait1}-${meta.trait2}_SumHer_rg"
-    publishDir "${params.outdir}/sumher/rg/${meta.trait1}-${meta.trait2}", mode: 'copy', overwrite: true
 
     input:
     tuple val(meta), path(sum1), path(sum2)

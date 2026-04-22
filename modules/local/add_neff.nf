@@ -4,7 +4,6 @@ nextflow.enable.dsl=2
 process ADD_NEFF {
 
   tag "${meta.id}"
-  publishDir "${params.outdir}/qc/${meta.id}", mode: 'copy', overwrite: true
 
   input:
   tuple val(meta), path(ldsc)

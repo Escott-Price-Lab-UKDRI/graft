@@ -4,7 +4,6 @@ nextflow.enable.dsl=2
 process CONJFDR_DATA_PREP {
 
     tag "${meta.trait1}_${meta.trait2}_prep4_conjfdr"
-    publishDir "${params.outdir}/conjFDR/ready/${meta.trait1}_${meta.trait2}", mode: 'copy', overwrite: true
 
     input:
     tuple val(meta), path(gwas1), path(gwas2)

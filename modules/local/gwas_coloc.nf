@@ -3,15 +3,14 @@ nextflow.enable.dsl=2
 
 process GWAS_COLOCALISATION {
 
-    tag "${meta.trait1}_${meta.trait2}_gwas_coloc"
-    publishDir "${params.outdir}/Colocalisation/${meta.trait1}_${meta.trait2}", mode: 'copy', overwrite: true
+    tag "${meta.trait1}_${meta.trait2}_${meta.source}_gwas_coloc"
 
     input:
     tuple val(meta), path(loci_dir)
     path gwas_coloc_r
 
     output:
-    tuple val(meta), path("coloc_out/${meta.trait1}_${meta.trait2}_coloc.tsv"), emit: coloc
+    tuple val(meta), path("coloc_out/${meta.trait1}_${meta.trait2}_${meta.source}_coloc.tsv"), emit: coloc
     tuple val(meta), path("coloc_out"), emit: coloc_dir
 
     script:
@@ -35,5 +34,10 @@ process GWAS_COLOCALISATION {
         "${meta.type2}" \\
         "${meta.s1}" \\
         "${meta.s2}"
+
+    if [ -f "coloc_out/${meta.trait1}_${meta.trait2}_coloc.tsv" ]; then
+        mv "coloc_out/${meta.trait1}_${meta.trait2}_coloc.tsv" \\
+           "coloc_out/${meta.trait1}_${meta.trait2}_${meta.source}_coloc.tsv"
+    fi
     """
 }

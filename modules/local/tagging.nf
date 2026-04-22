@@ -5,9 +5,6 @@ process TAGGING {
 
     tag "tagging_ldak"
 
-    when:
-    params.do_tagging || !file("${params.outdir}/sumher/tagging/${params.tag_prefix}.tagging").exists()
-
     input:
     path ldak_bin
     path plink_dir

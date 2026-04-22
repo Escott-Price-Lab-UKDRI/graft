@@ -1,8 +1,6 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-include { QC_GWAS }        from '../../modules/local/qc_gwas'
-include { ADD_NEFF }       from '../../modules/local/add_neff'
 include { LAVA_GWAS_PREP } from '../../modules/local/lava_prep'
 include { MAKE_INFO_FILE } from '../../modules/local/lava_prep'
 include { LAVA }           from '../../modules/local/lava'
@@ -20,8 +18,15 @@ workflow {
     .splitCsv(header:true, sep:'\t')
     .map { row ->
 
+      def trait = row.id.toString().trim()
+      def qc_tsv = file("${params.outdir}/qc/${trait}/${trait}_ldsc_ready_neff.tsv")
+
+      if( !qc_tsv.exists() ) {
+        error "Missing QC output for ${trait}: ${qc_tsv} ; run main_qc.nf first!"
+      }
+
       def meta                = [:]
-      meta.id                 = row.id.toString().trim()
+      meta.id                 = trait
       meta.sep                = row.sep ? row.sep.replace('\\t','\t') : '\t'
       meta.snp_col            = row.snp_col
       meta.chr_col            = row.chr_col
@@ -49,45 +54,50 @@ workflow {
       meta.cases              = (row.cases ?: "").toString().trim()
       meta.controls           = (row.controls ?: "").toString().trim()
 
-      tuple(meta, file(row.gwas))
+      tuple(meta, qc_tsv)
     }
 
   ch_pairs = Channel
     .fromPath(params.pairs)
     .splitCsv(header:true, sep:'\t')
     .map { row ->
+      def trait1 = row.trait1.toString().trim()
+      def trait2 = row.trait2.toString().trim()
+
+      def so_matrix = file("${params.outdir}/ldsc/${trait1}_${trait2}/${trait1}_${trait2}_ldsc/overlap_corr_for_LAVA_${trait1}_${trait2}.csv")
+      if( !so_matrix.exists() ) {
+        error "Missing LDSC sample overlap file for ${trait1}_${trait2}: ${so_matrix} ; run main_ldsc.nf first!"
+      }
+
       def meta = [
-        trait1: row.trait1.toString().trim(),
-        trait2: row.trait2.toString().trim(),
-        cases1: row.cases1,
-        controls1: row.controls1,
-        cases2: row.cases2,
-        controls2: row.controls2,
-        pop_prev1: row.pop_prev1,
-        pop_prev2: row.pop_prev2
+        trait1    : trait1,
+        trait2    : trait2,
+        pair      : "${trait1}_${trait2}",
+        cases1    : row.cases1,
+        controls1 : row.controls1,
+        cases2    : row.cases2,
+        controls2 : row.controls2,
+        pop_prev1 : row.pop_prev1,
+        pop_prev2 : row.pop_prev2
       ]
-      tuple(meta.trait1, meta.trait2, meta)
+
+      tuple(trait1, trait2, meta)
     }
 
-  qc_script = file("${workflow.launchDir}/bin/qc_gwas.py")
-  neff_script = file("${workflow.launchDir}/bin/compute_neff.py")
   lava_data_prep = file("${workflow.launchDir}/bin/prep_data.py")
-  lava_r = file("${workflow.launchDir}/bin/lava_pair.R")
+  lava_r         = file("${workflow.launchDir}/bin/lava_pair.R")
 
-  // Reference data
   lava_ref_dir = file("${workflow.launchDir}/ref/lava/lava_ref")
-  lava_ref_prefix = "lava-ukb-v1.1"
-  loci_file = file("${workflow.launchDir}/ref/lava/hdll_blocks.coords.loci")
-
-  ch_qc = QC_GWAS(ch_in, qc_script).ldsc_ready
-  ch_neff = ADD_NEFF(ch_qc, neff_script).ldsc_neff
+  loci_file    = file("${workflow.launchDir}/ref/lava/hdll_blocks.coords.loci")
 
   ch_lava = LAVA_GWAS_PREP(
-    ch_neff,
+    ch_in,
     lava_data_prep
   ).lava_tsv
 
-  ch_lava_key = ch_lava.map { meta, tsv -> tuple(meta.id, tsv) }
+  ch_lava_key = ch_lava.map { meta, tsv ->
+    tuple(meta.id, tsv)
+  }
 
   ch_pairs_with_t1 = ch_pairs
     .join(ch_lava_key, by: 0)
@@ -103,10 +113,8 @@ workflow {
 
   ch_info = MAKE_INFO_FILE(ch_info_in).info_tsv
 
-  // need to declare sample overlap matrix
-  // overlap_corr_for_LAVA_SCZ_LON.csv
   ch_overlap = ch_pairs.map { trait1, trait2, meta ->
-    def so_matrix = file("${workflow.launchDir}/results/ldsc/${trait1}_${trait2}/overlap_corr_for_LAVA_${trait1}_${trait2}.csv")
+    def so_matrix = file("${params.outdir}/ldsc/${trait1}_${trait2}/${trait1}_${trait2}_ldsc/overlap_corr_for_LAVA_${trait1}_${trait2}.csv")
     tuple(meta, so_matrix)
   }
 
@@ -121,11 +129,11 @@ workflow {
     }
 
   LAVA(
-  ch_lava_in,
-  lava_r,
-  lava_ref_dir,
-  loci_file
-  )  
+    ch_lava_in,
+    lava_r,
+    lava_ref_dir,
+    loci_file
+  )
 }
 
 // nextflow run workflows/neurobridge/main_lava.nf \

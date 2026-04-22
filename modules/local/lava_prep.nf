@@ -2,8 +2,8 @@
 nextflow.enable.dsl=2
 
 process LAVA_GWAS_PREP {
+    
     tag "${meta.id}_prep4_lava"
-    publishDir "${params.outdir}/lava/ready/${meta.id}", mode: 'copy', overwrite: true
 
     input:
     tuple val(meta), path(gwas)
@@ -30,7 +30,7 @@ process LAVA_GWAS_PREP {
 process MAKE_INFO_FILE {
 
     tag "${meta.trait1}_${meta.trait2}_info_prep"
-    publishDir "${params.outdir}/lava/info", mode: 'copy', overwrite: true
+    publishDir "${params.outdir}/LAVA/info", mode: 'copy', overwrite: true
 
     input:
     tuple val(meta), path(t1_tsv), path(t2_tsv)

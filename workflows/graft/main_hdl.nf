@@ -3,7 +3,7 @@ nextflow.enable.dsl=2
 
 include { QC_GWAS }  from '../../modules/local/qc_gwas'
 include { ADD_NEFF } from '../../modules/local/add_neff'
-include { HDL_L }    from '../../modules/local/hdl_l'
+include { HDL }      from '../../modules/local/hdl'
 
 workflow {
 
@@ -64,11 +64,12 @@ workflow {
 
     qc_script   = file("${workflow.launchDir}/bin/qc_gwas.py")
     neff_script = file("${workflow.launchDir}/bin/compute_neff.py")
-    hdl_script  = file("${workflow.launchDir}/bin/hdl_l.R")
+    hdl_script  = file("${workflow.launchDir}/bin/hdl.R")
 
     // hdl_l refs
-    ld_path     = file("${workflow.launchDir}/ref/HDL-L_ref/LD.path")
-    bim_path    = file("${workflow.launchDir}/ref/HDL-L_ref/bimfile")
+    ld_path     = file("${workflow.launchDir}/ref/HDL_ref/UKB_imputed_SVD_eigen99_extraction")
+    // ld_path     = file("${workflow.launchDir}/ref/HDL-L_ref/LD.path")
+    // bim_path    = file("${workflow.launchDir}/ref/HDL-L_ref/bimfile")
 
     /* 
     Pre-HDL channels
@@ -98,10 +99,9 @@ workflow {
             tuple(m, f1, f2)
         }
 
-    HDL_L(
+    HDL(
         ch_hdl_in,
         hdl_script,
-        ld_path,
-        bim_path
+        ld_path
     )
 }

@@ -13,7 +13,7 @@ workflow {
     if ( !params.pairs ) {
         error "Missing --pairs (pairs tsv)"
     }
-
+ 
     file(params.pairs)
         .splitCsv(header:true, sep: "\t")
         .each { row ->

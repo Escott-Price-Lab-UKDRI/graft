@@ -3,7 +3,7 @@ nextflow.enable.dsl=2
 
 process GEN_LD_MATRIX {
 
-    tag "${meta.trait1}_${meta.trait2}_gen_ld_matrix"
+    tag "${meta.pair}_${meta.source}_gen_ld_matrix"
 
     input:
     tuple val(meta), path(loci_dir)
@@ -12,18 +12,20 @@ process GEN_LD_MATRIX {
     val  ref_chr_base
 
     output:
-    tuple val(meta), path("defined_loci"), emit: ld_ready
+    tuple val(meta), path("${meta.pair}_${meta.source}"), emit: ld_ready
 
     script:
     """
     set -euo pipefail
 
     BASHBIN="bash"
+    OUTDIR="${meta.pair}_${meta.source}"
 
     "\$BASHBIN" "${gen_ld_bash}" \\
         "${meta.trait1}" \\
         "${meta.trait2}" \\
         "${loci_dir}" \\
-        "refpanel/${ref_chr_base}"
+        "refpanel/${ref_chr_base}" \\
+        "\$OUTDIR"
     """
 }

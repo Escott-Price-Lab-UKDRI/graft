@@ -4,7 +4,6 @@ nextflow.enable.dsl=2
 process LD_CLUMP {
 
     tag "${meta.trait1}_${meta.trait2}_clump"
-    publishDir "${params.outdir}/LD_clumping", mode: 'copy', overwrite: true
 
     input:
     tuple val(meta), path(gwas1), path(gwas2), path(hits)

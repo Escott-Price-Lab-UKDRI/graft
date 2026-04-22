@@ -4,7 +4,6 @@ nextflow.enable.dsl=2
 process H2 {
 
     tag "${meta.id}_SumHer_h2"
-    publishDir "${params.outdir}/sumher/${meta.id}", mode: 'copy', overwrite: true
 
     input:
     tuple val(meta), path(sumstats)

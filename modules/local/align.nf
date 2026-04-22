@@ -7,10 +7,13 @@ process ALIGN_GWAS {
 
   input:
   tuple val(meta), path(gwas1), path(gwas2)
-  file(align_script)
+  path align_script
 
   output:
-  tuple val(meta), path("${meta.trait1}_ldsc_ready_neff.tsv"), path("${meta.trait2}_ldsc_ready_neff.tsv"), emit: aligned_pair
+  tuple val(meta),
+        path("QC/${meta.trait1}/${meta.trait1}_ldsc_ready_neff.tsv"),
+        path("QC/${meta.trait2}/${meta.trait2}_ldsc_ready_neff.tsv"),
+        emit: aligned_pair
 
   script:
   """
@@ -28,7 +31,15 @@ process ALIGN_GWAS {
     --pheno2_gwas "${gwas2}" \
     --out_dir "."
 
-  cp "QC/${meta.trait1}/${meta.trait1}.ldsc_ready_neff.tsv" "${meta.trait1}_ldsc_ready_neff.tsv"
-  cp "QC/${meta.trait2}/${meta.trait2}.ldsc_ready_neff.tsv" "${meta.trait2}_ldsc_ready_neff.tsv"
+  test -f "QC/${meta.trait1}/${meta.trait1}.ldsc_ready_neff.tsv"
+  test -f "QC/${meta.trait2}/${meta.trait2}.ldsc_ready_neff.tsv"
+
+  mkdir -p "QC/${meta.trait1}" "QC/${meta.trait2}"
+
+  cp "QC/${meta.trait1}/${meta.trait1}.ldsc_ready_neff.tsv" \
+     "QC/${meta.trait1}/${meta.trait1}_ldsc_ready_neff.tsv"
+
+  cp "QC/${meta.trait2}/${meta.trait2}.ldsc_ready_neff.tsv" \
+     "QC/${meta.trait2}/${meta.trait2}_ldsc_ready_neff.tsv"
   """
 }

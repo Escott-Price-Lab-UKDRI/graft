@@ -1,19 +1,20 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-process HDL_L {
-  tag "${meta.trait1}_${meta.trait2}_hdl"
+process HDL {
 
-  publishDir "${params.outdir}/hdl/${meta.trait1}_${meta.trait2}", mode: 'copy', overwrite: true
+  tag "${meta.trait1}_${meta.trait2}_hdl"
 
   input:
   tuple val(meta), path(trait1_sumstats), path(trait2_sumstats)
   file(hdl_r)
   path(ld_path)
-  file(bim_path)
 
   output:
-  tuple val(meta), path("${meta.trait1}_${meta.trait2}_hdl"), emit: hdll_out
+  tuple val(meta), path("${meta.trait1}.hdl.tsv"), emit: hdl_trait1
+  tuple val(meta), path("${meta.trait2}.hdl.tsv"), emit: hdl_trait2
+  tuple val(meta), path("${meta.trait1}_${meta.trait2}.global_rg.tsv"), emit: hdl_rg
+  tuple val(meta), path("${meta.trait1}_${meta.trait2}.global_fit.rds"), emit: hdl_fit
 
   script:
   """
@@ -23,10 +24,6 @@ process HDL_L {
   if [ -z "\$RBIN" ] || [ "\$RBIN" = "null" ]; then
     RBIN="Rscript"
   fi
-
-  PAIR="${meta.trait1}_${meta.trait2}"
-  WORKOUT="\${PAIR}_hdl"
-  mkdir -p "\$WORKOUT"
 
   "\$RBIN" "${hdl_r}" \
     "${trait1_sumstats}" \
@@ -38,8 +35,10 @@ process HDL_L {
     "${meta.beta2}" \
     "${meta.se2}" \
     "${ld_path}" \
-    "${bim_path}" \
-    "\$WORKOUT" \
-    "${params.cov_min}"
+    "." \
+    "${params.hdl_eigen_cut}" \
+    "${params.hdl_N0}" \
+    "${params.hdl_lim}" \
+    "${params.hdl_jackknife}"
   """
 }

@@ -5,8 +5,9 @@ import neurobridge.ParamUtils
 import neurobridge.GWASSamplesheet
 import neurobridge.PairSamplesheet
 
-include { PREP_LDSC_INPUT } from '../../../subworkflows/local/ldsc/main'
-include { LDSC }            from '../../../modules/local/ldsc'
+include { PREP_LDSC_INPUT }         from '../../../subworkflows/local/ldsc/main'
+include { PREP_ALIGNED_LDSC_INPUT } from '../../../subworkflows/local/align/main'
+include { LDSC }                    from '../../../modules/local/ldsc'
 
 workflow STAGE1_LDSC {
 
@@ -22,13 +23,14 @@ workflow STAGE1_LDSC {
       tuple(meta, file(row.gwas))
     }
 
-  qc_script = file("${projectDir}/bin/qc_gwas.py")
-  neff_script = file("${projectDir}/bin/compute_neff.py")
-  ldsc_r = file("${projectDir}/bin/ldsc.R")
+  qc_script    = file("${projectDir}/bin/qc_gwas.py")
+  neff_script  = file("${projectDir}/bin/compute_neff.py")
+  align_script = file("${projectDir}/bin/align_alleles.py")
+  ldsc_r       = file("${projectDir}/bin/ldsc.R")
 
   hm3_snplist = file("${projectDir}/ref/ldsc/w_hm3.snplist")
-  ld_chr_dir = file("${projectDir}/ref/ldsc/eur_w_ld_chr")
-  wld_dir = file("${projectDir}/ref/ldsc/weights_hm3_no_hla")
+  ld_chr_dir  = file("${projectDir}/ref/ldsc/eur_w_ld_chr")
+  wld_dir     = file("${projectDir}/ref/ldsc/weights_hm3_no_hla")
 
   ch_sum = PREP_LDSC_INPUT(ch_in, qc_script, neff_script).ldsc_input
 
@@ -40,17 +42,7 @@ workflow STAGE1_LDSC {
       tuple(meta.trait1, meta.trait2, meta)
     }
 
-  ch_with_t1 = ch_pairs
-    .join(ch_sum, by: 0)
-    .map { trait1, trait2, meta, f1 ->
-      tuple(trait2, meta, f1)
-    }
+  ch_aligned = PREP_ALIGNED_LDSC_INPUT(ch_sum, ch_pairs, align_script).aligned_ldsc_input
 
-  ch_ldsc_in = ch_with_t1
-    .join(ch_sum, by: 0)
-    .map { trait2, meta, f1, f2 ->
-      tuple(meta, f1, f2)
-    }
-
-  LDSC(ch_ldsc_in, ldsc_r, hm3_snplist, ld_chr_dir, wld_dir)
+  LDSC(ch_aligned, ldsc_r, hm3_snplist, ld_chr_dir, wld_dir)
 }

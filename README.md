@@ -62,7 +62,7 @@ cd neurobridge/
 ```
 
 ```bash
-docker build -t neurobridge:1 -f env/Dockerfile env/
+docker build --no-cache -t neurobridge:1 -f env/Dockerfile .
 ```
 
 ---
