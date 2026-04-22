@@ -86,7 +86,8 @@ nextflow run . \
 - **[LDSC](https://github.com/bulik/ldsc)** – Linkage Disequilibrium Score Regression  
 - **[SumHer](https://github.com/zietzm/sumher_rs)** – Summary-based Heritability Estimation  
 - **[HDL / HDL-L](https://github.com/zhenin/HDL)** – High-Definition Likelihood (global and local)  
-- **[MiXeR](https://github.com/precimed/mixer)** – Mixture of Regressions  
+- **[MiXeR](https://github.com/precimed/mixer)** – Mixture of Regressions
+- **[TwoSampleMR](https://github.com/MRCIEU/TwoSampleMR)** - Two-Sample Mendelian Randomisation
 - **[LAVA](https://github.com/josefin-werme/LAVA)** – Local analysis of genetic covariance  
 - **[condFDR / conjFDR](https://github.com/alexploner/cfdr.pleio)** – Conditional / conjunctional false discovery rate  
 - **[PLINK 2.0](https://www.cog-genomics.org/plink/2.0/)** – Whole-genome association analysis toolkit  
@@ -94,7 +95,7 @@ nextflow run . \
 - **[COLOC](https://cran.r-project.org/web/packages/coloc/)** – Bayesian colocalisation analysis  
 - **[SuSiE](https://github.com/stephenslab/susieR)** – Bayesian fine-mapping and credible set estimation  
 - **[FUMA](https://fuma.ctglab.nl/)** – Functional mapping and annotation of GWAS loci  
-- **[SMR + HEIDI](https://yanglab.westlake.edu.cn/software/smr/)** – Summary-data-based Mendelian randomization for GWAS–QTL integration  
+- **[SMR + HEIDI](https://yanglab.westlake.edu.cn/software/smr/)** – Summary-data-based Mendelian randomisation for GWAS–QTL integration  
 
 ---
 
