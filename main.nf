@@ -26,18 +26,17 @@ include { STAGE1_GWAS_COLOC }   from './workflows/local/gwas_coloc/main'
 include { STAGE1_SUSIE }        from './workflows/local/susie/main'
 include { STAGE1_FUMA }         from './workflows/local/fuma/main'
 include { STAGE1_TARGET_GENES } from './workflows/local/target_genes/main'
+include { STAGE1_QTL_MANIFEST } from './workflows/local/qtl_manifest/main'
 // include { STAGE1_SMR_HEIDI } from './workflows/local/fuma/main'
 // include { STAGE1_QTL_COLOC } from './workflows/local/fuma/main'
 
-
 // ADD JWT IEU OpenGWAS token to twosamplemr/ module 
 // ADDD INTEAD OF Phenoscanner (ieu OpenGWAS API) => EBI-EMBL API GWAS Catalogue
-// ADD it as a paramter in params1.yaml
 
 // cross-trait localised pipeline - bridges genetic and biological layers
 workflow {
     STAGE1_QC()
-    TAGE1_LDSC()
+    STAGE1_LDSC()
     STAGE1_HDL()
     STAGE1_SUMHER()
     STAGE1_QC()
@@ -50,6 +49,8 @@ workflow {
     STAGE1_SUSIE()
     STAGE1_FUMA()
     STAGE1_TARGET_GENES()
+    STAGE1_QTL_MANIFEST()
+    // Grab target genes 
     // Bulk / sc - SMR + HEIDI
     // Bulk / sc - Coloc
 }
