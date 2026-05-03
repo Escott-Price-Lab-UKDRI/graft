@@ -9,7 +9,7 @@ nextflow.enable.dsl=2
     Escott-Price Lab; UK Dementia Research Institute
     Dev: Guillermo Comesaña Cimadevila
     GitHub: https://github.com/guillermocomesanacimadevila/graft
-
+ 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */ 
 
@@ -29,10 +29,12 @@ include { STAGE1_TARGET_GENES } from './workflows/local/target_genes/main'
 include { STAGE1_QTL_MANIFEST } from './workflows/local/qtl_manifest/main'
 include { STAGE1_SMR }          from './workflows/local/smr/main'
 
+// include STAGE1_QTL_COLOC from './workflows/local/qtl_coloc/main'
+// include STAGE1_QTL_SUSIE from './workflows/local/qtl_susie/main'
 
 workflow {
 
-    log.info "---- Welcome to nf-core/graft!----"
+    log.info "Launching \033[1;36mnf-core/graft\033[0m"
 
     if (params.run_qc) {
         STAGE1_QC()
@@ -86,11 +88,19 @@ workflow {
         STAGE1_TARGET_GENES()
     }
 
+    qtl_manifest_ch = Channel.empty()
+
     if (params.run_qtl_manifest) {
         STAGE1_QTL_MANIFEST()
+        qtl_manifest_ch = STAGE1_QTL_MANIFEST.out.manifest
+    }
+    else {
+        qtl_manifest_ch = Channel.fromPath(
+            "${params.qtl_manifest_out}/qtl_manifest_*.tsv", checkIfExists: true
+        )
     }
 
     if (params.run_smr) {
-        STAGE1_SMR()
+        STAGE1_SMR(qtl_manifest_ch)
     }
 }
