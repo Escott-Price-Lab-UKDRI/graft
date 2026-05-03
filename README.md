@@ -8,7 +8,7 @@
 
 ## Introduction
 
-**GRAFT** is a two-stage bioinformatics pipeline which takes two **genome-wide association study (GWAS) summary statistics** corresponding to two distinct traits (typically trait pairs where a pleiotropic relationship may be hypothesised). The pipeline covers analyses from estimating global heritability to functional approaches using **bulk and single-cell xQTL datasets**. In **Stage I**, graft performs GWAS QC and computes **SNP heritability**, polygenicity and discoverability, **global genetic correlation** (across multiple methods), and local genetic correlation. It then identifies loci showing evidence of pleiotropic association (via **conjFDR**) and performs **Bayesian colocalisation** and **fine-mapping** to prioritise candidate causal variants/loci. Following this stage, loci can be annotated using **FUMA** (performed manually) to map variants to genes and obtain basic functional annotation. In **Stage II**, graft focuses on functional interpretation of the prioritised loci by integrating bulk and single-cell xQTL datasets and performing **gene prioritisation (via SMR)** and consequent GWAS-to-xQTL colocalisation of priorisited genes. In essence, Stage II adds multi-layer biological evidence to the genetic findings from **Stage I**.
+**GRAFT** is a bioinformatics pipeline which takes two **genome-wide association study (GWAS) summary statistics** corresponding to two distinct traits and identifies QTL-informed, cross-trait drug targets. The pipeline covers analyses from estimating global heritability to functional approaches using **bulk and single-cell QTL datasets**. First, graft performs GWAS QC and computes **SNP heritability** and **global genetic correlation** (across multiple methods). It then identifies loci showing evidence of local genetic correlation (i.e. LAVA), or pleiotropy (via **conjFDR**) and performs **Bayesian colocalisation** and **fine-mapping** to prioritise candidate causal variants/loci. Following this stage, loci can be annotated using FUMA (performed manually) or by integrated mapping of variants within a ±X kb cis-window around each locus to map SNPs to genes and obtain basic functional annotation. Then, graft focuses on functional interpretation of the prioritised genes by integrating bulk and single-cell QTL data, performing **gene prioritisation (via SMR+HEIDI)** and consequent GWAS-to-QTL colocalisation and QTL fine-mapping of priorisited genes. In essence, this stage adds multi-layer biological evidence to the genetic findings from stage 1.
 
 ---
 
@@ -27,7 +27,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB)]() 
 [![R](https://img.shields.io/badge/R-4.4%2B-276DC3)]() 
-[![Nextflow](https://img.shields.io/badge/version-%E2%89%A525.04.0-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
+[![Nextflow](https://img.shields.io/badge/version-%E2%89%A526.04.0-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
 [![nf-core version](https://img.shields.io/badge/nf--core_template-3.5.2-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.5.2)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
@@ -63,7 +63,10 @@ cd graft/
 ```
 
 ```bash
-docker build --no-cache -t graft:1 -f env/Dockerfile .
+docker build --no-cache \
+  --platform linux/amd64 \
+  -t neurobridge:1 \
+  -f env/Dockerfile .
 ```
 
 ---
@@ -74,7 +77,11 @@ docker build --no-cache -t graft:1 -f env/Dockerfile .
 nextflow run . \
   -profile docker \
   -c conf/local/nextflow.config \
-  -params-file assets/params.stage1.yaml 
+  -params-file assets/params.stage1.yaml \
+  --input assets/gwas.tsv \
+  --pairs assets/ldsc_pairs.tsv \
+  --qtls assets/qtls.tsv \
+  -process.maxForks 1
 ```
 
 > [!WARNING]

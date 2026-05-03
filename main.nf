@@ -9,50 +9,98 @@ nextflow.enable.dsl=2
     Escott-Price Lab; UK Dementia Research Institute
     Dev: Guillermo Comesaña Cimadevila
     GitHub: https://github.com/guillermocomesanacimadevila/graft
-
+ 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */ 
 
-include { STAGE1_QC }          from './workflows/local/qc/main'
-include { STAGE1_LDSC }        from './workflows/local/ldsc/main'
-include { STAGE1_HDL }         from './workflows/local/hdl/main'
-include { STAGE1_SUMHER }      from './workflows/local/sumher/main'
-include { STAGE1_TWOSAMPLEMR } from './workflows/local/twosamplemr/main'
-include { STAGE1_MAGMA }       from './workflows/local/magma/main'
-include { STAGE1_LAVA }        from './workflows/local/lava/main'
-include { STAGE1_CONJFDR }     from './workflows/local/conjfdr/main'
-include { STAGE1_DEF_LOCI }    from './workflows/local/def_loci/main'
-include { STAGE1_GWAS_COLOC }  from './workflows/local/gwas_coloc/main'
-include { STAGE1_SUSIE }       from './workflows/local/susie/main'
-include { STAGE1_FUMA }        from './workflows/local/fuma/main'
-// include { TWOSAMPLEMR } from
-// include { STAGE1_FUMA } from './workflows/local/fuma/main'
-// include { STAGE1_SMR_HEIDI } from './workflows/local/fuma/main'
-// include { STAGE1_POST_SMR } from './workflows/local/fuma/main'
-// include { STAGE1_QTL_COLOC } from './workflows/local/fuma/main'
-// include { STAGE1_SMR_SUSIE_LD } from './workflows/local/fuma/main'
-// MAYBE INCLUDE MR? (Between SumHer and LAVA?)
+include { STAGE1_QC }           from './workflows/local/qc/main'
+include { STAGE1_LDSC }         from './workflows/local/ldsc/main'
+include { STAGE1_HDL }          from './workflows/local/hdl/main'
+include { STAGE1_SUMHER }       from './workflows/local/sumher/main'
+include { STAGE1_TWOSAMPLEMR }  from './workflows/local/twosamplemr/main'
+include { STAGE1_MAGMA }        from './workflows/local/magma/main'
+include { STAGE1_LAVA }         from './workflows/local/lava/main'
+include { STAGE1_CONJFDR }      from './workflows/local/conjfdr/main'
+include { STAGE1_DEF_LOCI }     from './workflows/local/def_loci/main'
+include { STAGE1_GWAS_COLOC }   from './workflows/local/gwas_coloc/main'
+include { STAGE1_SUSIE }        from './workflows/local/susie/main'
+include { STAGE1_FUMA }         from './workflows/local/fuma/main'
+include { STAGE1_TARGET_GENES } from './workflows/local/target_genes/main'
+include { STAGE1_QTL_MANIFEST } from './workflows/local/qtl_manifest/main'
+include { STAGE1_SMR }          from './workflows/local/smr/main'
 
-// GRAFT: GWAS Relatedness, Architecture & Functional Trait mapping
-// cross-trait localised pipeline - bridges genetic and biological layers
+// include STAGE1_QTL_COLOC from './workflows/local/qtl_coloc/main'
+// include STAGE1_QTL_SUSIE from './workflows/local/qtl_susie/main'
+
 workflow {
-    STAGE1_QC()
-    STAGE1_LDSC()
-    STAGE1_HDL()
-    STAGE1_SUMHER()
-    STAGE1_TWOSAMPLEMR()
-    STAGE1_MAGMA()
-    STAGE1_LAVA()
-    STAGE1_CONJFDR()
-    STAGE1_DEF_LOCI()
-    STAGE1_GWAS_COLOC()
-    STAGE1_SUSIE()
-    STAGE1_FUMA()   
-    // SUSIE -
-    // FUMA - 
-    // MAGMA - 
-    // Bulk - SMR + HEIDI
-    // Bulk - Coloc
-    // sc - SMR + HEIDI
-    // sc - Coloc
+
+    log.info "Launching \033[1;36mnf-core/graft\033[0m"
+
+    if (params.run_qc) {
+        STAGE1_QC()
+    }
+
+    if (params.run_ldsc) {
+        STAGE1_LDSC()
+    }
+
+    if (params.run_hdl) {
+        STAGE1_HDL()
+    }
+
+    if (params.run_sumher) {
+        STAGE1_SUMHER()
+    }
+
+    if (params.run_twosamplemr) {
+        STAGE1_TWOSAMPLEMR()
+    }
+
+    if (params.run_magma) {
+        STAGE1_MAGMA()
+    }
+
+    if (params.run_lava) {
+        STAGE1_LAVA()
+    }
+
+    if (params.run_conjfdr) {
+        STAGE1_CONJFDR()
+    }
+
+    if (params.run_def_loci) {
+        STAGE1_DEF_LOCI()
+    }
+
+    if (params.run_gwas_coloc) {
+        STAGE1_GWAS_COLOC()
+    }
+
+    if (params.run_susie) {
+        STAGE1_SUSIE()
+    }
+
+    if (params.run_fuma) {
+        STAGE1_FUMA()
+    }
+
+    if (params.run_target_genes) {
+        STAGE1_TARGET_GENES()
+    }
+
+    qtl_manifest_ch = Channel.empty()
+
+    if (params.run_qtl_manifest) {
+        STAGE1_QTL_MANIFEST()
+        qtl_manifest_ch = STAGE1_QTL_MANIFEST.out.manifest
+    }
+    else {
+        qtl_manifest_ch = Channel.fromPath(
+            "${params.qtl_manifest_out}/qtl_manifest_*.tsv", checkIfExists: true
+        )
+    }
+
+    if (params.run_smr) {
+        STAGE1_SMR(qtl_manifest_ch)
+    }
 }
